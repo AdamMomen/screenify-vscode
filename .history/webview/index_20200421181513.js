@@ -173,7 +173,11 @@
         /* Abstraction of click event listener */
         function shootContainer(event) {
           event.addEventListener("click", () => {
-            shootSnippet();
+            if (target === "container") {
+              shootAll();
+            } else {
+              shootSnippet();
+            }
           });
         }
         //  redsise event listener
@@ -232,6 +236,8 @@
             })
           })
         }
+        //
+
 
         function shootSnippet() {
           html2blob()

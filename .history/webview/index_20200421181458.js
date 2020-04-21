@@ -173,7 +173,11 @@
         /* Abstraction of click event listener */
         function shootContainer(event) {
           event.addEventListener("click", () => {
-            shootSnippet();
+            if (target === "container") {
+              shootAll();
+            } else {
+              shootSnippet();
+            }
           });
         }
         //  redsise event listener
@@ -232,14 +236,31 @@
             })
           })
         }
+        //
+
 
         function shootSnippet() {
-          html2blob()
-            .then(blob => {
-              serializeBlob(blob, serializedBlob => {
-                shoot(serializedBlob);
-              });
-            })
+          const width = snippetContainerNode.offsetWidth * 2;
+          const height = snippetContainerNode.offsetHeight * 2;
+
+          // Hide resizer before capture
+          snippetNode.style.resize = "none";
+          snippetContainerNode.style.resize = "none";
+
+          const options = {
+            width,
+            height,
+          }
+          snippetContainerNode.style.background = "none";
+          snippetContainerNode.style.transform = "scale(2)"
+          html2canvas(snippetContainerNode, options).then((canvas) => {
+            html2blob()
+              .then(blob => {
+                serializeBlob(blob, serializedBlob => {
+                  shoot(serializedBlob);
+                });
+              })
+          })
         }
 
         let isInAnimation = false;

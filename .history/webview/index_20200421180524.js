@@ -173,7 +173,11 @@
         /* Abstraction of click event listener */
         function shootContainer(event) {
           event.addEventListener("click", () => {
-            shootSnippet();
+            if (target === "container") {
+              shootAll();
+            } else {
+              shootSnippet();
+            }
           });
         }
         //  redsise event listener
@@ -203,43 +207,53 @@
           SaveCanvasImage();
           RedrawCanvasImage()
 
-        }
 
-        function html2blob() {
+        }
+        //
+        function shootAll() {
           const width = snippetContainerNode.offsetWidth * 2;
           const height = snippetContainerNode.offsetHeight * 2;
+
+          // Hide resizer before capture
           snippetNode.style.resize = "none";
           snippetContainerNode.style.resize = "none";
+
+          domtoimage.toBlob(snippetContainerNode, config).then(blob => {
+            canvas.style.transform = "none"
+            snippetNode.style.resize = "";
+            snippetContainerNode.style.resize = "";
+            // refactor this ADAM
+            serializeBlob(blob, serializedBlob => {
+              shoot(serializedBlob);
+            });
+          });
+        }
+
+        function shootSnippet() {
+          const width = snippetContainerNode.offsetWidth * 2;
+          const height = snippetContainerNode.offsetHeight * 2;
+
+          // Hide resizer before capture
+          snippetNode.style.resize = "none";
+          snippetContainerNode.style.resize = "none";
+
           const options = {
             width,
             height,
           }
           snippetContainerNode.style.background = "none";
-          snippetContainerNode.style.transform = "scale(2)";
-
-
-          return new Promise((resolve, reject) => {
-            html2canvas(snippetContainerNode, options).then((canvas) => {
-              canvas.toBlob((blob) => {
-                if (blob) {
-                  snippetContainerNode.style.backgroundColor = "#f2f2f2"
-                  snippetContainerNode.style.transform = "none"
-                  snippetNode.style.resize = "";
-                  snippetContainerNode.style.resize = "";
-                  resolve(blob)
-                } else reject(new Error("something bad happend"))
-              })
-            })
-          })
-        }
-
-        function shootSnippet() {
-          html2blob()
-            .then(blob => {
+          snippetContainerNode.style.transform = "scale(2)"
+          html2canvas(snippetContainerNode, options).then(function (canvas) {
+            canvas.toBlob((blob) => {
+              snippetContainerNode.style.backgroundColor = "#f2f2f2"
+              snippetContainerNode.style.transform = "none"
+              snippetNode.style.resize = "";
+              snippetContainerNode.style.resize = "";
               serializeBlob(blob, serializedBlob => {
                 shoot(serializedBlob);
               });
-            })
+            });
+          })
         }
 
         let isInAnimation = false;

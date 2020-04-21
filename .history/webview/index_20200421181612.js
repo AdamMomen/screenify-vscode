@@ -232,6 +232,8 @@
             })
           })
         }
+        //
+
 
         function shootSnippet() {
           html2blob()

@@ -173,7 +173,11 @@
         /* Abstraction of click event listener */
         function shootContainer(event) {
           event.addEventListener("click", () => {
-            shootSnippet();
+            if (target === "container") {
+              shootAll();
+            } else {
+              shootSnippet();
+            }
           });
         }
         //  redsise event listener
@@ -203,43 +207,106 @@
           SaveCanvasImage();
           RedrawCanvasImage()
 
-        }
 
-        function html2blob() {
+        }
+        //
+        function shootAll() {
           const width = snippetContainerNode.offsetWidth * 2;
           const height = snippetContainerNode.offsetHeight * 2;
-          snippetNode.style.resize = "none";
-          snippetContainerNode.style.resize = "none";
-          const options = {
+
+          const config = {
             width,
             height,
-          }
-          snippetContainerNode.style.background = "none";
-          snippetContainerNode.style.transform = "scale(2)";
+            style: {
+              transform: "scale(2)",
+              "transform-origin": "center",
+              background: "none" //getRgba(backgroundColor, transparentBackground)
+            }
+          };
+          // Hacky adjust of the canvas postion befrore capturing in order to align correctly.
+          // canvas.style.transform = `translate(${0.517*(canvas.width - 20)}px, ${(0.5038 * (canvas.height-20)) - 46.667}px)`
 
 
-          return new Promise((resolve, reject) => {
-            html2canvas(snippetContainerNode, options).then((canvas) => {
-              canvas.toBlob((blob) => {
-                if (blob) {
-                  snippetContainerNode.style.backgroundColor = "#f2f2f2"
-                  snippetContainerNode.style.transform = "none"
-                  snippetNode.style.resize = "";
-                  snippetContainerNode.style.resize = "";
-                  resolve(blob)
-                } else reject(new Error("something bad happend"))
-              })
-            })
-          })
+
+          // Hide resizer before capture
+          snippetNode.style.resize = "none";
+          snippetContainerNode.style.resize = "none";
+
+          domtoimage.toBlob(snippetContainerNode, config).then(blob => {
+            canvas.style.transform = "none"
+            snippetNode.style.resize = "";
+            snippetContainerNode.style.resize = "";
+            // refactor this ADAM
+            serializeBlob(blob, serializedBlob => {
+              shoot(serializedBlob);
+            });
+          });
         }
 
         function shootSnippet() {
-          html2blob()
-            .then(blob => {
+          const width = snippetContainerNode.offsetWidth * 2;
+          const height = snippetContainerNode.offsetHeight * 2;
+          const config = {
+            width,
+            height,
+            style: {
+              transform: "scale(2)",
+              "transform-origin": "center",
+              background: "none"
+            }
+          };
+
+
+
+          // Hide resizer before capture
+          snippetNode.style.resize = "none";
+          snippetContainerNode.style.resize = "none";
+
+          /**
+           * HTML canvas api
+           * 
+           * html2canvas(document.body).then(function (canvas) {
+             document.body.appendChild(canvas);
+           });
+           */
+          function rgbaToHex(rgba) {
+            var parts = rgba.substring(rgba.indexOf("(")).split(","),
+              r = parseInt(trim(parts[0].substring(1)), 10),
+              g = parseInt(trim(parts[1]), 10),
+              b = parseInt(trim(parts[2]), 10),
+              a = parseFloat(trim(parts[3].substring(0, parts[3].length - 1))).toFixed(2);
+
+            return ('#' + r.toString(16) + g.toString(16) + b.toString(16) + (a * 255).toString(16).substring(0, 2));
+          }
+          // const options = {
+          //   backgroundColor: rgbaToHex(getRgba(backgroundColor, true)),
+          //   scale: 2,
+          // }
+          const options = {
+            allowTaint: true,
+            useCORS: true,
+            backgroundColor: "rgba(0,0,0,0)",
+            removeContainer: true,
+            x: 0,
+            y: 0,
+            width: 374,
+            height: 722
+          }
+
+          html2canvas(snippetContainerNode, options).then(function (canvas) {
+            document.body.appendChild(canvas);
+            // });
+            // domtoimage.
+            // domtoimage.toBlob(snippetContainerNode, config).then(blob => {
+            canvas.toBlob((blob) => {
+              // canvas.style.transform = "none"
+              snippetNode.style.resize = "";
+              snippetContainerNode.style.resize = "";
               serializeBlob(blob, serializedBlob => {
                 shoot(serializedBlob);
               });
-            })
+            });
+          })
         }
 
         let isInAnimation = false;
@@ -548,16 +615,14 @@
           usingBrush = false;
         }
 
-
+        function getRgba(hex, transparentBackground) {
+          const bigint = parseInt(hex.slice(1), 16);
+          const r = (bigint >> 16) & 255;
+          const g = (bigint >> 8) & 255;
+          const b = bigint & 255;
+          const a = transparentBackground ? 0 : 1;
+          return `rgba(${r}, ${g}, ${b}, ${a})`;
+        }
       })
       ();
-    }
-
-    function getRgba(hex, transparentBackground) {
-      const bigint = parseInt(hex.slice(1), 16);
-      const r = (bigint >> 16) & 255;
-      const g = (bigint >> 8) & 255;
-      const b = bigint & 255;
-      const a = transparentBackground ? 0 : 1;
-      return `rgba(${r}, ${g}, ${b}, ${a})`;
     }

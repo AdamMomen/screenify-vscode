@@ -173,6 +173,7 @@
         /* Abstraction of click event listener */
         function shootContainer(event) {
           event.addEventListener("click", () => {
+
             shootSnippet();
           });
         }
@@ -232,6 +233,8 @@
             })
           })
         }
+        //
+
 
         function shootSnippet() {
           html2blob()
