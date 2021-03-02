@@ -2,9 +2,9 @@
     "name": "screenify",
     "displayName": "Screenify",
     "description": "Capture your code snippets and turn them into canvas for drawing, then share them others by uploading the image to screenify CDN server.",
-    "version": "0.0.4",
+    "version": "1.0.0",
     "engines": {
-        "vscode": "^1.42.0"
+        "vscode": "^1.53.0"
     },
     "keywords": [
         "screenshot",
@@ -120,7 +120,7 @@
                 "screenify.serverUrl": {
                     "type": "string",
                     "description": "`",
-                    "default": "screenify-njy7ok457q-ez.a.run.app"
+                    "default": "screenify-api-jf2tcwz37q-nw.a.run.app"
                 }
             }
         }
@@ -128,7 +128,8 @@
     "scripts": {
         "lint": "eslint .",
         "pretest": "npm run lint",
-        "test": "node ./test/runTest.js"
+        "test": "node ./test/runTest.js",
+        "deploy": "vsce publish --yarn"
     },
     "devDependencies": {
         "@types/glob": "^7.1.1",
